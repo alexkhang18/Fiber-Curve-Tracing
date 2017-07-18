@@ -9,52 +9,46 @@ close all
 
 tic 
 fibers = Fiber.empty;
-slices = collectCentroids('Synthetic Data Set//');
+
+growing_fibers = Fiber.empty;
+grown_fibers = Fiber.empty;
+
+new_fiber_distance_threshold = 100; 
+
+slices = collectCentroids('Synthetic Data Set/branching/Presentation2/');
 
 % Create initial fibers
 slice = slices{1};
 for i=1:length(slice)
    fiber = Fiber;
-   point = slice(i).Centroid
-   fiber.addPoint(point)
+   point = slice(i,:);
+   fiber.addPoint(point);
    fibers = [fibers fiber];
 end
 
-% make an array so that points in slice2 are like [x1 y1; x2 y2...]
-% there should be a shorter way to do this
-p = [];
-slice = slices{2};
-for i=1:length(slice)
-   point = slice(i).Centroid
-   p = [p; point];
-end
-
 % extend the fibers
+slice = slices{2};
 for i=1:length(fibers)
     fiber = fibers(i);
     point=fiber.points(1,:);
-    distances = sqrt(sum(bsxfun(@minus, p, point).^2,2));
-    closest = p(distances==min(distances),:);
-    fiber.addPoint(closest);
+    distances = sqrt(sum(bsxfun(@minus, slice, point).^2,2));
+    if (min(distances) < new_fiber_distance_threshold)
+        closest = slice(distances==min(distances),:);
+        fiber.addPoint(closest);
+    end
 end
 
 % The part where you create a virtual point and use it to find min distance
 for i=3:length(slices)
-    %%%%%%%%%%%%%%%%%%%%%%
-    %that formatting thing
     slice = slices{i};
-    p = [];
-    for i=1:length(slice)
-        point = slice(i).Centroid; p = [p; point];
-    end
-    %%%%%%%%%%%%%%%%%%%%%
-
     for j=1:length(fibers)
         fiber = fibers(j); 
         vpoint = fiber.getNextVirtualPoint();
-        distances = sqrt(sum(bsxfun(@minus, p, vpoint).^2,2));
-        closest = p(distances==min(distances),:);
-        fiber.addPoint(closest);
+        distances = sqrt(sum(bsxfun(@minus, slice, vpoint).^2,2));
+        if (min(distances) < new_fiber_distance_threshold)
+            closest = slice(distances==min(distances),:);
+            fiber.addPoint(closest);
+        end
     end
 end
 

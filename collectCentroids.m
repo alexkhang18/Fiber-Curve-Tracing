@@ -1,9 +1,9 @@
 function [ slices ] = collectCentroids( folder_path)
     slices = {};
 %% Import images sequentially and Converts Centroids into Data Points
-    for i=1:6
+    for i=1:15
         if i<10
-            filename=sprintf(strcat(folder_path,'Slide%d.tiff'),i);
+            filename=sprintf(strcat(folder_path,'Slide0%d.tiff'),i);
         else
             filename=sprintf(strcat(folder_path,'Slide%d.tiff'),i); 
         end
@@ -19,8 +19,12 @@ function [ slices ] = collectCentroids( folder_path)
         %temporally stores the centroids of the white dots
         s=regionprops(labelarray,'Centroid');
 
-        %stores centroids into an array (x1 y1 x2 y2 ...)
-        slices{i}=s;
+        p = [];
+        for j=1:length(s)
+            point = s(j).Centroid; 
+            p = [p; point];
+        end
+        slices{i} = p;
     end
 end
 
